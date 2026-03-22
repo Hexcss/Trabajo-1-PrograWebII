@@ -1,0 +1,96 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+  --app-bg: #f5f8ff;
+  --binary-pattern-a: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240' viewBox='0 0 240 240'%3E%3Cg fill='%231D4ED8' fill-opacity='0.46' font-family='monospace' font-size='30' font-weight='700'%3E%3Ctext x='16' y='44'%3E0%3C/text%3E%3Ctext x='86' y='74'%3E1%3C/text%3E%3Ctext x='162' y='52'%3E0%3C/text%3E%3Ctext x='42' y='132'%3E1%3C/text%3E%3Ctext x='122' y='148'%3E0%3C/text%3E%3Ctext x='192' y='122'%3E1%3C/text%3E%3Ctext x='68' y='212'%3E0%3C/text%3E%3Ctext x='170' y='206'%3E1%3C/text%3E%3C/g%3E%3C/svg%3E");
+  --binary-pattern-b: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220' viewBox='0 0 220 220'%3E%3Cg fill='%230EA5E9' fill-opacity='0.33' font-family='monospace' font-size='26' font-weight='700'%3E%3Ctext x='28' y='40'%3E1%3C/text%3E%3Ctext x='130' y='36'%3E0%3C/text%3E%3Ctext x='70' y='96'%3E0%3C/text%3E%3Ctext x='166' y='98'%3E1%3C/text%3E%3Ctext x='22' y='154'%3E0%3C/text%3E%3Ctext x='112' y='166'%3E1%3C/text%3E%3Ctext x='174' y='194'%3E0%3C/text%3E%3C/g%3E%3C/svg%3E");
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100%;
+  color: #0f172a;
+  background-color: var(--app-bg);
+  transition:
+    background-color 240ms ease,
+    color 240ms ease;
+}
+
+body::before,
+body::after {
+  content: '';
+  position: fixed;
+  inset: -200px;
+  pointer-events: none;
+  z-index: -1;
+  background-repeat: repeat;
+}
+
+body::before {
+  background-image: var(--binary-pattern-a);
+  background-size: 320px 320px;
+  background-position: 0 0;
+  opacity: 0.94;
+  animation: binary-drift-primary 22s linear infinite;
+}
+
+body::after {
+  background-image: var(--binary-pattern-b);
+  background-size: 300px 300px;
+  background-position: 140px 100px;
+  opacity: 0.72;
+  filter: blur(0.2px);
+  animation: binary-drift-secondary 32s linear infinite reverse;
+}
+
+.dark body {
+  color: #e2e8f0;
+  --app-bg: #030712;
+  --binary-pattern-a: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240' viewBox='0 0 240 240'%3E%3Cg fill='%237DD3FC' fill-opacity='0.58' font-family='monospace' font-size='30' font-weight='700'%3E%3Ctext x='16' y='44'%3E0%3C/text%3E%3Ctext x='86' y='74'%3E1%3C/text%3E%3Ctext x='162' y='52'%3E0%3C/text%3E%3Ctext x='42' y='132'%3E1%3C/text%3E%3Ctext x='122' y='148'%3E0%3C/text%3E%3Ctext x='192' y='122'%3E1%3C/text%3E%3Ctext x='68' y='212'%3E0%3C/text%3E%3Ctext x='170' y='206'%3E1%3C/text%3E%3C/g%3E%3C/svg%3E");
+  --binary-pattern-b: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220' viewBox='0 0 220 220'%3E%3Cg fill='%2338BDF8' fill-opacity='0.4' font-family='monospace' font-size='26' font-weight='700'%3E%3Ctext x='28' y='40'%3E1%3C/text%3E%3Ctext x='130' y='36'%3E0%3C/text%3E%3Ctext x='70' y='96'%3E0%3C/text%3E%3Ctext x='166' y='98'%3E1%3C/text%3E%3Ctext x='22' y='154'%3E0%3C/text%3E%3Ctext x='112' y='166'%3E1%3C/text%3E%3Ctext x='174' y='194'%3E0%3C/text%3E%3C/g%3E%3C/svg%3E");
+}
+
+@keyframes binary-drift-primary {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: 320px 320px;
+  }
+}
+
+@keyframes binary-drift-secondary {
+  from {
+    background-position: 140px 100px;
+  }
+  to {
+    background-position: 440px 400px;
+  }
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(15, 118, 110, 0.45);
+  border-radius: 999px;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: rgba(14, 165, 233, 0.45);
+}

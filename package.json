@@ -1,0 +1,12 @@
+{
+  "name": "trabajo-1-prograwebii",
+  "private": true,
+  "version": "0.1.0",
+  "packageManager": "pnpm@10.17.0",
+  "scripts": {
+    "dev:web": "pnpm --filter @trabajo/web dev",
+    "build:web": "pnpm --filter @trabajo/web build",
+    "check:web": "pnpm --filter @trabajo/web check",
+    "dev:api": "pnpm --dir apps/api start:dev"
+  }
+}

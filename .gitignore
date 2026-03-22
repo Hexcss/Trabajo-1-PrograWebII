@@ -1,0 +1,16 @@
+.agents
+AGENTS.md
+
+node_modules
+.pnpm-store
+.pnpm-debug.log*
+
+apps/web/node_modules
+apps/web/dist
+apps/web/.svelte-kit
+apps/web/.vite
+apps/web/.turbo
+
+packages/types/dist
+
+.DS_Store
