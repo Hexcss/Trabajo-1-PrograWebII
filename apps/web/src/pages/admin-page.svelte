@@ -3,8 +3,10 @@
   import type {
     CategoryWithStats,
     CreateCategoryDto,
+    CreateDiscountDto,
     CreateProductDto,
     CreateUserDto,
+    Discount,
     Order,
     OrdersListResponse,
     OrderStatus,
@@ -23,6 +25,7 @@
   import { getFriendlyError } from '@/features/auth/auth-errors';
   import { productsService } from '@/services/products.service';
   import { categoriesService } from '@/services/categories.service';
+  import { discountsService } from '@/services/discounts.service';
   import { usersService } from '@/services/users.service';
   import { ordersService } from '@/services/orders.service';
   import ProductForm from '@/features/products/product-form.svelte';
@@ -37,8 +40,19 @@
   let userSearch = $state('');
   let userRoleFilter = $state<'all' | Role>('all');
   let orderStatusDrafts = $state<Record<string, OrderStatus>>({});
+  let discountSyncing = $state(false);
 
   const orderStatusOptions: OrderStatus[] = ['created', 'processing', 'shipped', 'delivered', 'cancelled'];
+
+  type ProductSubmitPayload = {
+    product: CreateProductDto;
+    discount: {
+      enabled: boolean;
+      discountPercent: number;
+      startDate: string;
+      endDate: string;
+    };
+  };
 
   let productModal = $state<{ open: boolean; mode: 'create' | 'edit'; product: Product | null }>({
     open: false,
@@ -141,11 +155,6 @@
 
   const createProductMutation = createMutation<Product, Error, CreateProductDto>({
     mutationFn: (payload: CreateProductDto) => productsService.create(payload),
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: queryKeys.products.all() });
-      closeProductModal();
-      authSession.setNotice({ kind: 'success', text: 'Product created.' });
-    },
     onError: (error) => {
       globalError = getFriendlyError(error, 'Could not create product.');
     },
@@ -153,11 +162,6 @@
 
   const updateProductMutation = createMutation<Product, Error, { id: string; payload: CreateProductDto }>({
     mutationFn: ({ id, payload }: { id: string; payload: CreateProductDto }) => productsService.update(id, payload),
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: queryKeys.products.all() });
-      closeProductModal();
-      authSession.setNotice({ kind: 'success', text: 'Product updated.' });
-    },
     onError: (error) => {
       globalError = getFriendlyError(error, 'Could not update product.');
     },
@@ -274,9 +278,42 @@
   const users = $derived($usersQuery.data?.items ?? []);
   const orders = $derived($ordersQuery.data?.items ?? []);
 
-  const isProductSubmitting = $derived($createProductMutation.isPending || $updateProductMutation.isPending);
+  const isProductSubmitting = $derived(
+    $createProductMutation.isPending || $updateProductMutation.isPending || discountSyncing
+  );
   const isCategorySubmitting = $derived($createCategoryMutation.isPending || $updateCategoryMutation.isPending);
   const isUserSubmitting = $derived($createUserMutation.isPending || $updateUserMutation.isPending);
+
+  async function syncDiscountForProduct(
+    productId: string,
+    discountInput: ProductSubmitPayload['discount']
+  ) {
+    const existing = await discountsService.list({ productId });
+
+    if (!discountInput.enabled) {
+      if (existing.length > 0) {
+        await Promise.all(existing.map((item: Discount) => discountsService.remove(item._id)));
+      }
+      return;
+    }
+
+    const payload: CreateDiscountDto = {
+      productId,
+      discountPercent: Number(discountInput.discountPercent),
+      startDate: discountInput.startDate,
+      endDate: discountInput.endDate,
+    };
+
+    if (existing.length === 0) {
+      await discountsService.create(payload);
+      return;
+    }
+
+    await discountsService.update(existing[0]._id, payload);
+    if (existing.length > 1) {
+      await Promise.all(existing.slice(1).map((item: Discount) => discountsService.remove(item._id)));
+    }
+  }
 
   function normalizeOrderStatus(status?: string): OrderStatus {
     if (status === 'created') return 'created';
@@ -317,16 +354,34 @@
     userModal = { open: false, mode: 'create', user: null };
   }
 
-  function submitProduct(payload: CreateProductDto) {
+  async function submitProduct(payload: ProductSubmitPayload) {
     globalError = '';
 
-    if (productModal.mode === 'create') {
-      $createProductMutation.mutate(payload);
-      return;
-    }
+    try {
+      const savedProduct =
+        productModal.mode === 'create'
+          ? await $createProductMutation.mutateAsync(payload.product)
+          : productModal.product
+            ? await $updateProductMutation.mutateAsync({
+                id: productModal.product._id,
+                payload: payload.product,
+              })
+            : null;
 
-    if (productModal.product) {
-      $updateProductMutation.mutate({ id: productModal.product._id, payload });
+      if (!savedProduct) return;
+
+      discountSyncing = true;
+      await syncDiscountForProduct(savedProduct._id, payload.discount);
+      await queryClient.invalidateQueries({ queryKey: queryKeys.products.all() });
+      closeProductModal();
+      authSession.setNotice({
+        kind: 'success',
+        text: productModal.mode === 'create' ? 'Product created.' : 'Product updated.',
+      });
+    } catch (error) {
+      globalError = getFriendlyError(error, 'Could not save product.');
+    } finally {
+      discountSyncing = false;
     }
   }
 
@@ -484,17 +539,18 @@
               <th class="px-3 py-2">Category</th>
               <th class="px-3 py-2">Price</th>
               <th class="px-3 py-2">Stock</th>
+              <th class="px-3 py-2">Discount</th>
               <th class="px-3 py-2">Actions</th>
             </tr>
           </thead>
           <tbody>
             {#if $productsQuery.isPending}
               <tr>
-                <td class="px-3 py-6 text-center text-slate-500" colspan="5">Loading products...</td>
+                <td class="px-3 py-6 text-center text-slate-500" colspan="6">Loading products...</td>
               </tr>
             {:else if products.length === 0}
               <tr>
-                <td class="px-3 py-6 text-center text-slate-500" colspan="5">No products found.</td>
+                <td class="px-3 py-6 text-center text-slate-500" colspan="6">No products found.</td>
               </tr>
             {:else}
               {#each products as product}
@@ -503,6 +559,21 @@
                   <td class="px-3 py-2 text-slate-600">{product.category ?? '-'}</td>
                   <td class="px-3 py-2 text-slate-600">{formatCurrency(product.price)}</td>
                   <td class="px-3 py-2 text-slate-600">{product.stock}</td>
+                  <td class="px-3 py-2">
+                    {#if product.activeDiscount}
+                      <div class="inline-flex items-center gap-2 rounded-full border border-emerald-300 bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700">
+                        <span>-{product.activeDiscount.discountPercent}%</span>
+                        <span>Active</span>
+                      </div>
+                      <div class="mt-1 text-[11px] text-slate-500">
+                        {formatDate(product.activeDiscount.startDate)} - {formatDate(product.activeDiscount.endDate)}
+                      </div>
+                    {:else}
+                      <span class="inline-flex rounded-full border border-slate-300 bg-slate-50 px-2.5 py-1 text-xs font-semibold text-slate-500">
+                        No active discount
+                      </span>
+                    {/if}
+                  </td>
                   <td class="px-3 py-2">
                     <div class="flex gap-2">
                       <button

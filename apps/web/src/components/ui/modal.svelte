@@ -1,3 +1,7 @@
+<script module lang="ts">
+  let openModalCount = 0;
+</script>
+
 <script lang="ts">
   import { AnimatePresence } from 'svelte-motion';
   import type { Snippet } from 'svelte';
@@ -23,12 +27,36 @@
     if (event.currentTarget !== event.target) return;
     onClose();
   }
+
+  $effect(() => {
+    if (!open || typeof document === 'undefined' || typeof window === 'undefined') return;
+
+    const body = document.body;
+    const doc = document.documentElement;
+    const scrollbarWidth = Math.max(0, window.innerWidth - doc.clientWidth);
+
+    openModalCount += 1;
+    if (openModalCount === 1) {
+      body.style.overflow = 'hidden';
+      if (scrollbarWidth > 0) {
+        body.style.paddingRight = `${scrollbarWidth}px`;
+      }
+    }
+
+    return () => {
+      openModalCount = Math.max(0, openModalCount - 1);
+      if (openModalCount === 0) {
+        body.style.overflow = '';
+        body.style.paddingRight = '';
+      }
+    };
+  });
 </script>
 
 <AnimatePresence show={open} initial={false}>
   <MotionDiv
     key="overlay"
-    class="fixed inset-0 z-50 grid place-items-center bg-slate-900/45 p-4 dark:bg-slate-950/70"
+    class="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-slate-900/45 p-4 dark:bg-slate-950/70"
     initial={{ opacity: 0 }}
     animate={{ opacity: 1 }}
     exit={{ opacity: 0 }}
@@ -37,7 +65,8 @@
   >
     <MotionDiv
       key="panel"
-      class={`w-full max-w-2xl rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl dark:border-slate-700 dark:bg-slate-900 ${panelClass}`}
+      class={`w-full max-w-2xl overflow-y-auto rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl dark:border-slate-700 dark:bg-slate-900 ${panelClass}`}
+      style="max-height: calc(100vh - 2rem);"
       initial={{ opacity: 0, y: 24, scale: 0.97 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: 18, scale: 0.98 }}
