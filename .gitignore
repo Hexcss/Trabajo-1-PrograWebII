@@ -14,3 +14,5 @@ apps/web/.turbo
 packages/types/dist
 
 .DS_Store
+
+.env
