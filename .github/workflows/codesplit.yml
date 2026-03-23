@@ -1,0 +1,75 @@
+name: Sync Monorepo Slices
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configure git
+        run: |
+          git config --global user.name 'Hexcss'
+          git config --global user.email 'cadersuay.javier@gmail.com'
+
+      - name: Push branch slices
+        env:
+          REPO: ${{ github.repository }}
+          TOKEN: ${{ github.token }}
+          SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+
+          REMOTE="https://x-access-token:${TOKEN}@github.com/${REPO}.git"
+
+          TARGETS=(
+            "frontend|apps/web packages/types package.json pnpm-lock.yaml pnpm-workspace.yaml"
+            "backend/api|apps/api packages/types package.json pnpm-lock.yaml pnpm-workspace.yaml"
+          )
+
+          for target in "${TARGETS[@]}"; do
+            IFS='|' read -r BRANCH PATH_LIST <<<"$target"
+            echo "==> Preparing branch '${BRANCH}'"
+
+            INCLUDE_PATHS=()
+            for path in ${PATH_LIST}; do
+              if [[ -e "$path" ]]; then
+                INCLUDE_PATHS+=("$path")
+              else
+                echo "    skipping missing path: $path"
+              fi
+            done
+
+            if [[ ${#INCLUDE_PATHS[@]} -eq 0 ]]; then
+              echo "    no valid paths found, skipping ${BRANCH}"
+              continue
+            fi
+
+            TMP_DIR="$(mktemp -d)"
+            git archive --format=tar HEAD "${INCLUDE_PATHS[@]}" | tar -xf - -C "${TMP_DIR}"
+
+            pushd "${TMP_DIR}" >/dev/null
+              git init
+              git checkout -b split-sync
+              git config user.name 'Hexcss'
+              git config user.email 'cadersuay.javier@gmail.com'
+              git add -A
+              git commit -m "sync(${BRANCH}): ${SHA}"
+              git remote add origin "${REMOTE}"
+              git push --force origin "split-sync:${BRANCH}"
+            popd >/dev/null
+
+            rm -rf "${TMP_DIR}"
+          done

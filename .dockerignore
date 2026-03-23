@@ -1,0 +1,35 @@
+# VCS / CI metadata
+.git
+.github
+
+# Local agent artifacts
+.agents
+AGENTS.md
+
+# Dependency folders (workspace + apps)
+node_modules
+**/node_modules
+.pnpm-store
+
+# Build outputs
+**/dist
+**/.next
+**/.svelte-kit
+**/.turbo
+**/.vite
+**/coverage
+
+# Local environment files (keep examples committed in context)
+**/.env
+**/.env.local
+**/.env.development
+**/.env.production
+
+# Editor / OS noise
+.DS_Store
+*.log
+*.tmp
+
+# Non-runtime docs
+docs
+apps/api/docs

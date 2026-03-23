@@ -26,6 +26,8 @@
           remember: 'Mantener perfil en este dispositivo',
           submit: 'Entrar',
           submitting: 'Ingresando...',
+          google: 'Entrar con Google',
+          github: 'Entrar con GitHub',
           guest: 'Entrar como invitado',
           heroTag: STORE_NAME,
           heroTitle: 'Tu tienda tech con panel de gestión integrado.',
@@ -41,6 +43,8 @@
           remember: 'Keep profile cache on this device',
           submit: 'Sign in',
           submitting: 'Signing in...',
+          google: 'Continue with Google',
+          github: 'Continue with GitHub',
           guest: 'Continue as guest',
           heroTag: STORE_NAME,
           heroTitle: 'A focused tech store with integrated management workspace.',
@@ -86,6 +90,18 @@
 
   function continueAsGuest() {
     router.navigate(APP_ROUTES.market);
+  }
+
+  function continueWithGoogle() {
+    if (typeof window === 'undefined') return;
+    const baseUrl = (import.meta.env.VITE_API_URL ?? 'http://localhost:3000').replace(/\/$/, '');
+    window.location.href = `${baseUrl}/auth/oauth/google/start?intent=login`;
+  }
+
+  function continueWithGithub() {
+    if (typeof window === 'undefined') return;
+    const baseUrl = (import.meta.env.VITE_API_URL ?? 'http://localhost:3000').replace(/\/$/, '');
+    window.location.href = `${baseUrl}/auth/oauth/github/start?intent=login`;
   }
 </script>
 
@@ -164,6 +180,29 @@
             disabled={$loginMutation.isPending}
           >
             {$loginMutation.isPending ? copy.submitting : copy.submit}
+          </button>
+          <button
+            class="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 dark:border-slate-600 dark:bg-slate-950 dark:text-slate-100 dark:hover:bg-slate-900"
+            type="button"
+            onclick={continueWithGoogle}
+          >
+            <svg aria-hidden="true" viewBox="0 0 24 24" class="h-4 w-4">
+              <path fill="#EA4335" d="M12 10.2v3.9h5.5c-.2 1.3-1.5 3.9-5.5 3.9a6 6 0 1 1 0-12c2.3 0 3.8 1 4.7 1.8l3.2-3.1A10.8 10.8 0 0 0 12 2a10 10 0 1 0 0 20c5.8 0 9.6-4.1 9.6-9.8 0-.7-.1-1.4-.2-2H12z" />
+              <path fill="#FBBC05" d="M3.2 7.3l3.6 2.7A6 6 0 0 1 12 6c2.3 0 3.8 1 4.7 1.8l3.2-3.1A10.8 10.8 0 0 0 12 2C8.1 2 4.8 4.2 3.2 7.3z" />
+              <path fill="#34A853" d="M12 22c2.9 0 5.3-1 7-2.8l-3.2-2.6c-.9.7-2 1.2-3.8 1.2-3.9 0-5.2-2.6-5.5-3.9l-3.5 2.7C4.7 19.8 8 22 12 22z" />
+              <path fill="#4285F4" d="M21.6 12.2c0-.7-.1-1.4-.2-2H12v3.9h5.5c-.3 1.3-1.5 3.9-5.5 3.9-3.9 0-5.8-2.9-5.8-6s2-6 5.8-6c2.3 0 3.8 1 4.7 1.8l3.2-3.1A10.8 10.8 0 0 0 12 2a10 10 0 0 0-9 14.6l3.5-2.7A6 6 0 0 1 6.2 12c0-3.1 2-6 5.8-6 2.3 0 3.8 1 4.7 1.8l3.2-3.1A10.8 10.8 0 0 0 12 2a10 10 0 1 0 9.6 10.2z" opacity=".08" />
+            </svg>
+            {copy.google}
+          </button>
+          <button
+            class="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 dark:border-slate-600 dark:bg-slate-950 dark:text-slate-100 dark:hover:bg-slate-900"
+            type="button"
+            onclick={continueWithGithub}
+          >
+            <svg aria-hidden="true" viewBox="0 0 24 24" class="h-4 w-4 fill-current">
+              <path d="M12 .3a12 12 0 0 0-3.8 23.4c.6.1.8-.2.8-.6v-2.3c-3.4.8-4.1-1.6-4.1-1.6-.6-1.5-1.4-1.9-1.4-1.9-1.2-.8.1-.8.1-.8 1.3.1 2.1 1.4 2.1 1.4 1.2 2 3.1 1.4 3.9 1.1.1-.9.5-1.4.8-1.7-2.7-.3-5.5-1.4-5.5-6a4.7 4.7 0 0 1 1.2-3.2 4.3 4.3 0 0 1 .1-3.1s1-.3 3.3 1.2a11.4 11.4 0 0 1 6 0c2.3-1.5 3.3-1.2 3.3-1.2a4.3 4.3 0 0 1 .1 3.1 4.7 4.7 0 0 1 1.2 3.2c0 4.6-2.8 5.6-5.5 6 .5.4.9 1.2.9 2.5v3.7c0 .4.2.7.8.6A12 12 0 0 0 12 .3" />
+            </svg>
+            {copy.github}
           </button>
           <button
             class="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-800"
