@@ -1,6 +1,6 @@
 from marshmallow import Schema, fields, validate
 
-from ...common.serialization import iso, money
+from ...common.serialization import iso, jsonable, model_id, money
 
 
 def product_to_dict(product, avg_rating=None, review_count=0, active_discount=None):
@@ -11,10 +11,10 @@ def product_to_dict(product, avg_rating=None, review_count=0, active_discount=No
         "price": money(product.get("price")),
         "stock": int(product.get("stock", 0)),
         "imageUrl": product.get("imageUrl"),
-        "category": product.get("category"),
-        "categoryId": product.get("categoryId"),
-        "tags": product.get("tags") or [],
-        "createdBy": product.get("createdBy"),
+        "category": jsonable(product.get("category")),
+        "categoryId": model_id(product.get("categoryId")),
+        "tags": jsonable(product.get("tags") or []),
+        "createdBy": model_id(product.get("createdBy")),
         "createdAt": iso(product.get("createdAt")),
         "updatedAt": iso(product.get("updatedAt")),
         "avgRating": avg_rating,

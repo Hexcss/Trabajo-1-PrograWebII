@@ -1,12 +1,12 @@
 from marshmallow import Schema, fields, validates_schema, ValidationError, validate
 
-from ...common.serialization import iso, money
+from ...common.serialization import iso, model_id, money
 
 
 def discount_to_dict(discount):
     return {
         "_id": str(discount.get("_id")),
-        "productId": discount.get("productId"),
+        "productId": model_id(discount.get("productId")),
         "discountPercent": money(discount.get("discountPercent")),
         "startDate": iso(discount.get("startDate")),
         "endDate": iso(discount.get("endDate")),

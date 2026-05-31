@@ -1,5 +1,6 @@
 from app.common.security import hash_password
 from app.extensions import mongo
+from bson import ObjectId
 
 
 def create_admin(app):
@@ -55,6 +56,36 @@ def test_user_cannot_create_product_but_admin_can(client, app):
     assert listing.status_code == 200
     assert listing.json["total"] == 1
     assert listing.json["items"][0]["name"] == "Keyboard"
+
+
+def test_product_listing_serializes_legacy_object_ids(client, app):
+    with app.app_context():
+        category_id = ObjectId()
+        creator_id = ObjectId()
+        mongo.collection("products").insert_one(
+            {
+                "name": "Legacy product",
+                "description": "Stored with ObjectId references",
+                "price": 12.5,
+                "stock": 4,
+                "category": {"_id": category_id, "name": "Legacy"},
+                "categoryId": category_id,
+                "createdBy": creator_id,
+                "tags": [ObjectId()],
+            }
+        )
+
+    listing = client.get("/products")
+    assert listing.status_code == 200
+    item = listing.json["items"][0]
+    assert item["category"]["_id"] == str(category_id)
+    assert item["categoryId"] == str(category_id)
+    assert item["createdBy"] == str(creator_id)
+    assert isinstance(item["tags"][0], str)
+
+    top = client.get("/products/top?limit=4")
+    assert top.status_code == 200
+    assert top.json[0]["categoryId"] == str(category_id)
 
 
 def test_validation_error_shape(client):
