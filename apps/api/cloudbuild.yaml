@@ -49,10 +49,11 @@ substitutions:
 steps:
   - id: "build"
     name: "gcr.io/cloud-builders/docker"
+    dir: "apps/api"
     args:
       [
         "build",
-        "-f","apps/api/Dockerfile",
+        "-f","Dockerfile",
         "-t","${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO_NAME}/${_IMAGE_NAME}:$COMMIT_SHA",
         "-t","${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO_NAME}/${_IMAGE_NAME}:latest",
         "."

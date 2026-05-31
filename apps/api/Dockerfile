@@ -1,5 +1,6 @@
 # -------------------
 # Backend Flask API
+# Build context: apps/api
 # -------------------
 FROM python:3.12-slim
 
@@ -30,4 +31,3 @@ USER app
 EXPOSE 4000
 
 CMD ["sh", "-c", "gunicorn --bind 0.0.0.0:${PORT:-4000} --workers ${WEB_CONCURRENCY:-2} --threads ${WEB_THREADS:-4} --timeout ${WEB_TIMEOUT:-120} run:app"]
-

@@ -58,7 +58,7 @@ El backend escucha en `http://localhost:4000`.
 
 ## Docker
 
-Desde `backend/api`:
+Desde `apps/api`:
 
 ```bash
 docker compose up --build
@@ -67,17 +67,17 @@ docker compose up --build
 O desde la raiz del repositorio:
 
 ```bash
-docker compose up --build api
+docker compose -f apps/api/docker-compose.yml up --build api
 ```
 
 El contenedor expone el puerto `4000` en local. En Cloud Run el servicio usa la variable `PORT` que inyecta la plataforma.
 
 ## Cloud Build
 
-El archivo `cloudbuild.yaml` esta preparado para ejecutarse desde `backend/api` o desde la rama subtree `backend/api` que genera el workflow del repositorio.
+El workflow `.github/workflows/codesplit.yml` publica la rama `backend/api` conservando la ruta `apps/api`, por lo que el trigger de Cloud Build debe usar `apps/api/cloudbuild.yaml`. El paso Docker entra en `apps/api` antes de ejecutar `docker build`, asi el `Dockerfile` mantiene rutas relativas al backend (`requirements.txt`, `app`, `run.py`) y tambien funciona con Docker Compose local.
 
 ```bash
-gcloud builds submit --config cloudbuild.yaml .
+gcloud builds submit --config apps/api/cloudbuild.yaml .
 ```
 
 Ajusta las substitutions `_MONGO_URI`, `_JWT_ACCESS_SECRET`, `_JWT_REFRESH_SECRET`, `_CORS_ORIGIN`, `_CLIENT_URL`, `_GCS_BUCKET`, `_RESEND_API_KEY`, OAuth y `_RUNTIME_SA` antes de desplegar. Para frontend y API en dominios distintos, el despliegue usa `COOKIE_SAMESITE=None` y `COOKIE_SECURE=true`.
