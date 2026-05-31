@@ -52,7 +52,7 @@ steps:
     args:
       [
         "build",
-        "-f","Dockerfile",
+        "-f","apps/api/Dockerfile",
         "-t","${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO_NAME}/${_IMAGE_NAME}:$COMMIT_SHA",
         "-t","${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO_NAME}/${_IMAGE_NAME}:latest",
         "."
