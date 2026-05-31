@@ -1,123 +1,22 @@
-# Trabajo 1 - PrograWeb II
+# Practica 2 Flask
 
-Monorepo with a reused NestJS backend and a new Svelte 5 frontend for the assignment.
+Este paquete contiene una guia agentica para refactorizar el backend actual de NestJS a Flask cumpliendo la Practica 2.
 
-## Workspace structure
+## Archivos
 
-- `apps/api`: existing JWT backend (NestJS + MongoDB)
-- `apps/web`: Svelte 5 SPA frontend (Vite + Tailwind + svelte-motion + TanStack Query)
-- `packages/types`: shared DTO/domain/API contract types
-- `packages/infrastructure`: reserved for Terraform/infrastructure concerns
-- `docs`: delivery-oriented documentation
+- `PROMPT.md`: prompt maestro para ejecutar la migracion completa.
+- `skills/00-contract-audit/SKILL.md`: auditoria del contrato NestJS/Svelte.
+- `skills/01-flask-architecture/SKILL.md`: estructura Flask por capas.s
+- `skills/02-auth-jwt-roles/SKILL.md`: autenticacion JWT, cookies y roles.
+- `skills/03-sqlalchemy-repositories/SKILL.md`: persistencia real y repositorios.
+- `skills/04-validation-errors/SKILL.md`: Marshmallow y errores globales.
+- `skills/05-resource-migration/SKILL.md`: migracion de recursos y endpoints.
+- `skills/06-tests-readme-ai-memory/SKILL.md`: tests, README y memoria de IA.
 
-## Prerequisites
+## Uso recomendado
 
-- Node.js 20+
-- pnpm 10+
-- Running MongoDB for backend
-- Backend `.env` configured inside `apps/api`
-
-## Install
-
-```bash
-pnpm install
-```
-
-## Run
-
-Terminal 1 (API):
-
-```bash
-pnpm --dir apps/api start:dev
-```
-
-Terminal 2 (Web):
-
-```bash
-pnpm dev:web
-```
-
-Frontend default URL: `http://localhost:5173`
-
-## Frontend environment variables
-
-`apps/web/.env`
-
-- `VITE_API_URL`: backend base URL (default expected `http://localhost:3000`)
-
-Example:
-
-```bash
-cp apps/web/.env.example apps/web/.env
-```
-
-## Build and check
-
-```bash
-pnpm check:web
-pnpm build:web
-```
-
-## Backend endpoints consumed by frontend
-
-Auth/session:
-
-- `POST /auth/login`
-- `POST /auth/logout`
-- `GET /users/me`
-
-Products:
-
-- `GET /products`
-- `GET /products/top`
-- `GET /products/:id`
-- `POST /products` (admin)
-- `PUT /products/:id` (admin)
-- `DELETE /products/:id` (admin)
-
-Categories:
-
-- `GET /categories`
-- `POST /categories` (admin)
-- `PUT /categories/:id` (admin)
-- `DELETE /categories/:id` (admin)
-
-Users:
-
-- `GET /users` (admin)
-- `POST /users` (admin)
-- `PATCH /users/:id` (admin)
-- `DELETE /users/:id` (admin)
-- `PATCH /users/me`
-
-## Auth and session flow
-
-- Backend stores JWT access/refresh in HTTP-only cookies.
-- Frontend always uses `credentials: 'include'`.
-- Access-token expiration is transparently refreshed by backend guard using refresh cookie.
-- Frontend subscribes to `401` responses and forces clean logout + redirect.
-- Optional profile-cache persistence is handled in frontend localStorage (not token storage).
-
-## Role behavior in UI
-
-- `user`: login, market, profile
-- `admin`: all `user` capabilities + admin console (`products`, `categories`, `users` CRUD)
-
-## Rune usage map
-
-- `$state`: page/filter/modal/form/session state (for example `market-page.svelte`, `admin-page.svelte`, `auth-session.svelte.ts`)
-- `$derived`: computed flags and render-ready values (`isAdmin`, filtered lists, tab style, pagination values)
-- `$effect`: router/auth guards, query refetch sync on filters, storage/session synchronization
-- `$props`: typed component APIs in reusable components/forms/layout
-
-## Optional features implemented
-
-- session profile persistence toggle
-- role-restricted admin area
-- animated UI transitions with `svelte-motion`
-- search/sort/filter in market and admin tables
-- modal-based create/edit/delete flows with confirmation dialogs
-
-## Shared types
-
-All frontend runtime contracts are centralized under `packages/types/src` and consumed via `@trabajo/types`.
+1. Copia `PROMPT.md` a la raiz del repositorio o usalo como prompt principal para el agente.
+2. Copia la carpeta `skills/` en el contexto de trabajo de tu agente/coding assistant.
+3. Ejecuta la migracion por fases, no todo de golpe.
+4. Mantén el frontend Svelte 5 como fuente de verdad del contrato consumido.
+5. Documenta en la memoria de IA cada prompt real utilizado, iteracion, error de IA y correccion manual.
